@@ -14,13 +14,11 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 # Helper functions
-def is_latin(text):
-    """Tekshiradi: Matn faqat lotin harflaridan tashkil topganmi."""
-    return bool(re.match(r'^[a-zA-Z\'\s]*$', text))
+def has_cyrillic(text):
+    """Tekshiradi: Matnda kirill harflari bormi."""
+    return bool(re.search(r'[а-яА-ЯёЁ]', text))
 
 def latin_to_cyrillic(text):
-    if not is_latin(text):  # Agar matn lotin alifbosida bo‘lmasa, hech narsa qilmang
-        return None  # Javob qaytarmaslik uchun
     translit_map_upper = [
         ("G'", 'Ғ'), ('Ts', 'Ц'), ('Yo', 'Ё'), ("O'", 'Ў'), ('Ch', 'Ч'), ('Sh', 'Ш'), ('Yu', 'Ю'), ('Ya', 'Я'),
         ('Ye', 'Е'), ('A', 'А'), ('B', 'Б'), ('V', 'В'), ('G', 'Г'), ('D', 'Д'),
@@ -55,10 +53,14 @@ async def start(update: Update, context: CallbackContext) -> None:
 
 async def convert_to_cyrillic(update: Update, context: CallbackContext) -> None:
     text = update.message.text
-    if text.startswith('/'):  # Komandalarni o'tkazib yuborish
+
+    # Agar matnda kirill harflari bo‘lsa, javob bermaslik
+    if has_cyrillic(text):
         return
+
+    # Matnni kirillchaga o‘girish
     converted_text = latin_to_cyrillic(text)
-    if converted_text:  # Agar javob bo'lsa, uni qaytarish
+    if converted_text:  # Agar o‘girgan natija mavjud bo‘lsa
         await update.message.reply_text(converted_text)
 
 def main():
